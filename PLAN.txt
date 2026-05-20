@@ -1,0 +1,44 @@
+strgen
+
+*WHAT THIS TOOL DOES
+it generates passwords/passphrases to stdout
+
+
+*FLAGS
+	 -l / --length 
+	 	 length of password string(s) (default=12)
+	 -c / --count
+	 	 number of password strings (default=1)
+	 -d / --delimiter 
+	 	 delimiter between password strings (default='\n')
+	 -g / --classes 
+	 	 list of comma-separated classes (default=ascii ; options are standard ctype from libc: upper,lower,digit,alpha,alnum,punct,space,blank,graph,print,cntrl,ascii)
+	 -i / --include
+	 	 string of explicit valid characters (default="")
+	 -x / --exclude  
+	 	 string of explicit invalid characters (default="")
+
+
+*DATA FLOW
+	  I - BUILD STRING
+	  II - TEST CHAR
+	  	 1. grab random byte using getrandom()
+	  	 2. cast it as unsigned char
+	  	 3. for each character class the user enables
+	  	 4. is it valid character?
+	  	 	a) if yes, save this character to a buffer and move to next character
+	  	 	b) if no, move to step 1
+	  III - PRINT BUFFER
+	  IV - TERMINATE STRING (optionally, repeat for multi-string output)
+
+*FUNCTIONS
+	build_string(char *buffer, size_t size)
+		receives a pointer to the buffer and it's size
+	test_char(unsigned char c)
+		tests a generated character's validity 
+	print_buffer(char terminator)
+		terminates the buffer and prints to the stream
+
+
+*FUTURE IDEAS
+	implement wordlist input/output
