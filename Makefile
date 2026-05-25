@@ -5,7 +5,7 @@ SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
 
-TARGET=$(BIN_DIR)/testpass
+TARGET=$(BIN_DIR)/strgen
 SOURCES=$(wildcard $(SRC_DIR)/*.c)
 OBJECTS=$(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 

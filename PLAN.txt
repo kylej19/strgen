@@ -5,18 +5,20 @@ it generates passwords/passphrases to stdout
 
 
 *FLAGS
-	 -l / --length 
-	 	 length of password string(s) (default=12)
-	 -c / --count
-	 	 number of password strings (default=1)
-	 -d / --delimiter 
-	 	 delimiter between password strings (default='\n')
-	 -g / --classes 
-	 	 list of comma-separated classes (default=ascii ; options are standard ctype from libc: upper,lower,digit,alpha,alnum,punct,space,blank,graph,print,cntrl,ascii)
-	 -i / --include
-	 	 string of explicit valid characters (default="")
-	 -x / --exclude  
-	 	 string of explicit invalid characters (default="")
+	-l / --length 
+	   length of password string(s) (default=12)
+	-c / --count
+	   number of password strings (default=1)
+	-d / --delimiter 
+	   delimiter between password strings (default='\n')
+	-g / --classes 
+	   list of comma-separated classes (default=ascii ; options are standard ctype from libc: upper,lower,digit,alpha,alnum,punct,space,blank,graph,print,cntrl,ascii)
+	-w / --with
+	   string of explicit valid characters (default="")
+	-x / --exclude  
+	   string of explicit invalid characters (default="")
+    -i / --info
+	   prints information on how "crackable" the password is, i.e. entropy, bits, etc. 
 
 
 *DATA FLOW
