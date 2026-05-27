@@ -23,119 +23,160 @@ typedef enum {
   CLASS_PUNCT = 1 << 3, /* 1000 */
 } CharClass;
 
+const int BUF_SIZE = 256; /* bytes per character, max 256 (from getrandom) */
+const int TOTAL_CLASSES = 4; /* total character classes */
+
 int main(int argc, char **argv) {
 
-  const int BUF_SIZE = 64;
+  /* allocate some string buffers */
+  char *delimiter = malloc(8); /* allocate 8 chars for the delimiter (prob overkill)*/
+  char *excluded = malloc(32); /* more than enough exclusion characters, if you need more then you should use a different class */
 
-  size_t password_length;
-  CharClass enabled_classes[4];
-  int num_classes = 0, enabled = 0, password_count = 1, opt;
-  char *delimiter = "\n", *excluded = "";
-  
-  /* we're going to use getopt to parse our command-line arguments
-	 part of unistd.h
-	 int getopt (int ARGC, char *const *ARGV, const char *OPTIONS)  */
-  while ((opt = getopt(argc, argv, "l:c:d:g:x:i")) != -1) {
+  /* default configurations*/
+  size_t password_length = 12; /* default string length */
+  int num_classes = 4; /* total number of classes enabled */
+  int enabled = CLASS_LOWER | CLASS_UPPER | CLASS_DIGIT | CLASS_PUNCT; /* enabled all by default */
+  int password_count = 1; /* the links in the chain */
+  strcpy(delimiter, "-");
+  strcpy(excluded, delimiter);
+
+  CharClass enabled_classes[TOTAL_CLASSES];
+  for (int i = 0; i < TOTAL_CLASSES; i++) {
+	enabled_classes[i] = 1 << i;
+  }
+  int opt;  
+  while ((opt = getopt(argc, argv, "l:c:d:g:x:i")) != -1) { /* getopt is perfect for parsing argc & argv */
 	switch (opt) {
 	case 'l': /* length */
-	  /* int atoi (const char *STRING)
-		 parses int from optarg (set by getopt) and converts to size_t */
-	  password_length = (size_t) atoi(optarg);
+	  password_length = (size_t) atoi(optarg); /* parses int from optarg (set by getopt) and converts to size_t */
 	  break;
 	case 'c': /* count of strings to generate */
 	  password_count = atoi(optarg);
 	  break;
 	case 'd': /* change the delimiter from the default newline character*/
-	  delimiter = optarg;
+	  strcpy(delimiter, optarg);
 	  break;
 	case 'g':
-	  // we need to tokenize the optarg and use bitmasking to enable our character classes
-	  // char * strtok (char *restrict NEWSTRING, const char *restrict DELIMITERS)
-	  char *token = strtok(optarg,",");
+	  /* if the g flag is enabled, we turn off the default for full customizablility*/
+	  for (int i = 0; i < TOTAL_CLASSES; i++) {
+		enabled_classes[i] = 0;
+	  }
+	  num_classes = 0;
+	  enabled = 0;
+	  
+	  char *token = strtok(optarg,","); /* tokenize the optargs with a comma */
 	  while (token)
 		{
-		  if (strcmp(token, "lower") == 0) enabled |= CLASS_LOWER;
+		  if (strcmp(token, "lower") == 0) enabled |= CLASS_LOWER; /* each enabled class or's the bits with enabled */
 		  if (strcmp(token, "upper") == 0) enabled |= CLASS_UPPER;
 		  if (strcmp(token, "digit") == 0) enabled |= CLASS_DIGIT;
-		  if (strcmp(token, "punct") == 0) enabled |= CLASS_PUNCT;
-		  // call again on the same optarg (advances to the next token bc of NULL)
-		  token = strtok(NULL,",");
+		  if (strcmp(token, "punct") == 0) enabled |= CLASS_PUNCT;	  
+		  token = strtok(NULL,","); /* call again on the same optarg (src=NULL advances to the next token) */
 		}
 	  break;
 	case 'x': /* explicitly excluded characters */
-	  excluded = optarg;
+	  strcpy(excluded, optarg);
 	  break;
 	case 'i': /* prints info about generated passwords */
 	  break;
 	}
   }
+
+  strcat(excluded,delimiter);
+
   if (enabled & CLASS_LOWER) enabled_classes[num_classes++] = CLASS_LOWER;
   if (enabled & CLASS_UPPER) enabled_classes[num_classes++] = CLASS_UPPER;
   if (enabled & CLASS_DIGIT) enabled_classes[num_classes++] = CLASS_DIGIT;
   if (enabled & CLASS_PUNCT) enabled_classes[num_classes++] = CLASS_PUNCT;
 
   for (int count = 0; count < password_count; count++) {
+
 	/* print the delimiter on the second or more */
 	if (count > 0)
 	  printf("%s", delimiter);
+
 	/* buffer to store the generated characters */
 	char password[password_length];
+
 	/* generate the characters and select them with enabled classes */
 	for (int i = 0; i < (int) password_length; i++) {
+
 	  CharClass current = enabled_classes[i % num_classes]; /* cycles 0,1,2,0,1,2... */
+
 	  char *buffer = generate_buffer(BUF_SIZE);
+
 	  password[i] = select_char(buffer, BUF_SIZE, current, excluded); /* single-bit mask */
+
 	  free_buffer(buffer);
 	}
+
 	/* then shuffle using Fisher-Yates */
 	for (int i = password_length - 1; i > 0; i--) {
+
 	  /* need a random index from 0..i */
 	  unsigned char rand_byte;
 	  getrandom(&rand_byte, 1, 0);
+
 	  int j = rand_byte % (i + 1);
+
 	  char tmp = password[i];
 	  password[i] = password[j];
 	  password[j] = tmp;
 	}
+	/* print the password to stdout */
 	for (int i = 0; i < (int) password_length; i++) {
 	  printf("%c",password[i]);
 	}
 
   }
-
+  /* free our buffers for exclusions and delimiters */
+  if (delimiter)
+	free(delimiter);
+  if (excluded)
+	free(excluded);
+  /* finalize the output with a newline */
   printf("\n"); 
 }
-
-char *generate_buffer(size_t len) {
+/* generates a buffer to select our characters from */
+char *generate_buffer(size_t len) { 
+  /* allocate a buffer to store the generated bytes*/
   char *buffer = (char *)malloc(len + 1);
+  /* if malloc returns null we are out of memory */
   if (!buffer)
 	return NULL;
-  // ssize_t getrandom (void *BUFFER, size_t LENGTH, unsigned, int FLAGS)
+  /* getrandom gathers bytes from the same pool as /dev/urandom,
+   * which is more complicated than i understand so go read the docs
+   * requires sys/random.h
+   * ssize_t getrandom (void *BUFFER, size_t LENGTH, unsigned, int FLAGS) */
   ssize_t length = getrandom(buffer, len, 0);
+  /* check to make sure we returned the proper length we asked for*/
   if ((int)length == (int)len)
 	return buffer;
   else
+	/* return NULL if we receive unexpected output */
 	return NULL;
 }
 
-void free_buffer(char *buffer) {
-  if (buffer)
+void free_buffer(char *buffer) { /* free the memory reserved for the buffer */
+  if (buffer) /* make sure the buffer exists */
 	free(buffer);
   else
 	printf("buffer is NULL!\n");
 }
 
 unsigned char select_char(char *buffer, size_t len, int class, char *excluded) {
-  if (!buffer)
+
+  if (!buffer) /* again, make sure our buffer exists before we try to do stuff with it */
 	return '\0';
-  /* loop through the buffer to find a valid char */
-  for (int i = 0; i < (int) len; i++) {
-	/* cast the character being tested with a mask (just to be sure) */
-	unsigned char c = *(buffer + i) & 0x7f;
-	/* check against the exclusion list */
-	if (excluded && strchr(excluded, c))
+
+  for (int i = 0; i < (int) len; i++) { /* loop through the buffer to find a valid char */
+	
+	unsigned char c = *(buffer + i) & 0x7f; /* cast the character being tested with a mask (just to be sure) */
+	
+	if (excluded && strchr(excluded, c)) /* check against the exclusion list */
 	  continue;
-	if ((class & CLASS_LOWER) && islower(c)) return c;
+
+	if ((class & CLASS_LOWER) && islower(c)) return c; /* check designated class, then check the byte for class membership */
     if ((class & CLASS_UPPER) && isupper(c)) return c;
     if ((class & CLASS_DIGIT) && isdigit(c)) return c;
     if ((class & CLASS_PUNCT) && ispunct(c)) return c;
