@@ -38,7 +38,6 @@ int main(int argc, char **argv) {
   int enabled = CLASS_LOWER | CLASS_UPPER | CLASS_DIGIT | CLASS_PUNCT; /* enabled all by default */
   int password_count = 1; /* the links in the chain */
   strcpy(delimiter, "-");
-  strcpy(excluded, delimiter);
 
   CharClass enabled_classes[TOTAL_CLASSES];
   for (int i = 0; i < TOTAL_CLASSES; i++) {
