@@ -1,5 +1,5 @@
 CC=gcc
-CCFLAGS=-Wall -Wextra -std=c99 -g
+CCFLAGS=-Wall -Wextra -g
 
 SRC_DIR = src
 OBJ_DIR = obj
