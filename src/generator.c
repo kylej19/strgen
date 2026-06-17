@@ -29,8 +29,8 @@ const int TOTAL_CLASSES = 4; /* total character classes */
 int main(int argc, char **argv) {
 
   /* allocate some string buffers */
-  char *delimiter = malloc(8); /* allocate 8 chars for the delimiter (prob overkill)*/
-  char *excluded = malloc(32); /* more than enough exclusion characters, if you need more then you should use a different class */
+  char *delimiter = calloc(8, 1); /* allocate 8 chars for the delimiter (prob overkill)*/
+  char *excluded = calloc(32, 1); /* more than enough exclusion characters, if you need more then you should use a different class */
 
   /* default configurations*/
   size_t password_length = 12; /* default string length */
@@ -72,6 +72,11 @@ int main(int argc, char **argv) {
 		  if (strcmp(token, "punct") == 0) enabled |= CLASS_PUNCT;	  
 		  token = strtok(NULL,","); /* call again on the same optarg (src=NULL advances to the next token) */
 		}
+
+	    if (enabled & CLASS_LOWER) enabled_classes[num_classes++] = CLASS_LOWER;
+	    if (enabled & CLASS_UPPER) enabled_classes[num_classes++] = CLASS_UPPER;
+	    if (enabled & CLASS_DIGIT) enabled_classes[num_classes++] = CLASS_DIGIT;
+	    if (enabled & CLASS_PUNCT) enabled_classes[num_classes++] = CLASS_PUNCT;
 	  break;
 	case 'x': /* explicitly excluded characters */
 	  strcpy(excluded, optarg);
@@ -83,11 +88,6 @@ int main(int argc, char **argv) {
 
   strcat(excluded,delimiter);
 
-  if (enabled & CLASS_LOWER) enabled_classes[num_classes++] = CLASS_LOWER;
-  if (enabled & CLASS_UPPER) enabled_classes[num_classes++] = CLASS_UPPER;
-  if (enabled & CLASS_DIGIT) enabled_classes[num_classes++] = CLASS_DIGIT;
-  if (enabled & CLASS_PUNCT) enabled_classes[num_classes++] = CLASS_PUNCT;
-
   for (int count = 0; count < password_count; count++) {
 
 	/* print the delimiter on the second or more */
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 	  printf("%s", delimiter);
 
 	/* buffer to store the generated characters */
-	char password[password_length];
+	char password[password_length + 1];
 
 	/* generate the characters and select them with enabled classes */
 	for (int i = 0; i < (int) password_length; i++) {
@@ -122,6 +122,7 @@ int main(int argc, char **argv) {
 	  password[i] = password[j];
 	  password[j] = tmp;
 	}
+	password[password_length] = '\0';
 	/* print the password to stdout */
 	for (int i = 0; i < (int) password_length; i++) {
 	  printf("%c",password[i]);
