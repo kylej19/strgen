@@ -77,6 +77,13 @@ int main(int argc, char **argv) {
 	    if (enabled & CLASS_UPPER) enabled_classes[num_classes++] = CLASS_UPPER;
 	    if (enabled & CLASS_DIGIT) enabled_classes[num_classes++] = CLASS_DIGIT;
 	    if (enabled & CLASS_PUNCT) enabled_classes[num_classes++] = CLASS_PUNCT;
+
+	    if (!enabled) {
+	      const char *message = "Error, usage illegal!\n\n";
+	      fprintf(stderr,"%s", message);
+		exit(1);
+		   }
+
 	  break;
 	case 'x': /* explicitly excluded characters */
 	  strcpy(excluded, optarg);

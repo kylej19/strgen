@@ -1,5 +1,5 @@
-CC=gcc
-CCFLAGS=-Wall -Wextra -g
+CC=clang
+CCFLAGS=-Wall -Wextra -g -fsanitize=address -fsanitize=undefined
 
 SRC_DIR = src
 OBJ_DIR = obj
@@ -26,5 +26,7 @@ clean:
 
 run:
 	./$(TARGET)
+debug:
+	gdb ./$(TARGET)
 
-.PHONY: all clean run
+.PHONY: all clean run debug
