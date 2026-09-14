@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 	enabled_classes[i] = 1 << i;
   }
   int opt;  
-  while ((opt = getopt(argc, argv, "l:c:d:g:x:i")) != -1) { /* getopt is perfect for parsing argc & argv */
+  while ((opt = getopt(argc, argv, "l:c:d:g:x:h")) != -1) { /* getopt is perfect for parsing argc & argv */
 	switch (opt) {
 	case 'l': /* length */
 	  password_length = (size_t) atoi(optarg); /* parses int from optarg (set by getopt) and converts to size_t */
@@ -88,7 +88,15 @@ int main(int argc, char **argv) {
 	case 'x': /* explicitly excluded characters */
 	  strcpy(excluded, optarg);
 	  break;
-	case 'i': /* prints info about generated passwords */
+	case 'h': /* prints instructions on how to generate passwords */
+      /* l:c:d:g:x: */
+      printf("\nUsage: %s\n", argv[0]);
+      printf("  -l\tcontrols the length of password segments\n");
+      printf("  -c\tcontrols the count of password segments\n");
+      printf("  -d\tprovide a delimiter string between password segments\n");
+      printf("  -g\tselect which character classes you would wish to include\n");
+      printf("  -x\tprovide any characters to exclude\n");
+      printf("\n\ndefault password settings\n(length=12,count=1,groups=all,excluded=none,delimiter=not-applicable)\n\noutput\t==\t");
 	  break;
 	}
   }
