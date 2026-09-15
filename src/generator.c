@@ -90,13 +90,14 @@ int main(int argc, char **argv) {
 	  break;
 	case 'h': /* prints instructions on how to generate passwords */
       /* l:c:d:g:x: */
-      printf("\nUsage: %s\n", argv[0]);
-      printf("  -l\tcontrols the length of password segments\n");
-      printf("  -c\tcontrols the count of password segments\n");
-      printf("  -d\tprovide a delimiter string between password segments\n");
-      printf("  -g\tselect which character classes you would wish to include\n");
-      printf("  -x\tprovide any characters to exclude\n");
-      printf("\n\ndefault password settings\n(length=12,count=1,groups=all,excluded=none,delimiter=not-applicable)\n\noutput\t==\t");
+      printf("\nUsage: %s [OPTS]\n\n", argv[0]);
+      printf("  -l [int]\t\tcontrols the length of password segments\n");
+      printf("  -c [int]\t\tcontrols the count of password segments\n");
+      printf("  -d [string]\t\tprovide a delimiter string between password segments\n");
+      printf("  -g [group-list]\tcomma separated values of which character classes you would wish to include\n");
+      printf("  -x [string]\t\tprovide any characters to exclude\n\n");
+      printf("default = { length=12;count=1;groups=lower,upper,digit,punct;excluded=\"\";delimiter=\"-\" }\n\n");
+      exit(0);
 	  break;
 	}
   }
